@@ -30,8 +30,8 @@ public class JwtTokenProvider {
 
     private final UserDetailsService userDetailsService;
 
-    // JWT 토큰 생성
-    public String createToken(String userEmail, List<String> roles) {
+    // 액세스 토큰 생성 (비공개 클래임 정보 포함)
+    public String createAccessToken(String userEmail, List<String> roles) {
         Claims claims = Jwts.claims().setSubject(userEmail); // JWT payload 저장되는 정보 단위
         claims.put("roles", roles); // 정보는 key, value 쌍으로 저장된다.
         Date now = new Date();
@@ -39,6 +39,17 @@ public class JwtTokenProvider {
                 .setClaims(claims) // 정보 저장
                 .setIssuedAt(now) // 토큰 발행 시간 정보
                 .setExpiration(new Date(now.getTime() + accessTokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
+    // 리프레시 토큰 생성 (비공개 클레임 정보 포함하지 않음)
+    public String createRefreshToken() {
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(null) // 정보 저장
+                .setIssuedAt(now) // 토큰 발행 시간 정보
+                .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }

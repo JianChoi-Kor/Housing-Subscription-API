@@ -1,6 +1,7 @@
 package com.project.hss.domain.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -121,13 +122,13 @@ public class Response {
         return fail(Collections.emptyList(), msg, status);
     }
 
-    public ResponseEntity<?> fail(LinkedList<LinkedHashMap<String, String>> error) {
+    public ResponseEntity<?> invalidFields(LinkedList<LinkedHashMap<String, String>> errors) {
         Body body = Body.builder()
                 .state(HttpStatus.BAD_REQUEST.value())
                 .data(Collections.emptyList())
                 .result("fail")
                 .massage("")
-                .error(error)
+                .error(errors)
                 .build();
         return ResponseEntity.ok(body);
     }
