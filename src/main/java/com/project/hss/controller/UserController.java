@@ -2,7 +2,7 @@ package com.project.hss.controller;
 
 import com.project.hss.domain.dto.Response;
 import com.project.hss.domain.dto.UserRequestDto;
-import com.project.hss.lib.Common;
+import com.project.hss.lib.Helper;
 import com.project.hss.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,21 +19,52 @@ public class UserController {
 
     private final UserService userService;
     private final Response response;
-    private final Common common;
 
-    // 회원가입
-    @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@Validated UserRequestDto.Signup userSignup, Errors errors) {
+    /**
+     * <p> 회원가입 </p>
+     *
+     * @param signUpDto
+     * @param errors
+     * @return
+     */
+    @PostMapping("/sign-up")
+    public ResponseEntity<?> signUp(@Validated UserRequestDto.SignUpDto signUpDto, Errors errors) {
         // validation check
         if(errors.hasErrors()) {
-            return response.invalidFields(common.refineErrors(errors));
+            return response.invalidFields(Helper.refineErrors(errors));
         }
-        return userService.signUp(userSignup);
+        return userService.signUp(signUpDto);
     }
 
-    // 로그인
+    /**
+     * <p> 로그인 </p>
+     *
+     * @param loginDto
+     * @param errors
+     * @return
+     */
     @PostMapping("/login")
-    public ResponseEntity<?> login(UserRequestDto.Login userLogin) {
-        return userService.login(userLogin);
+    public ResponseEntity<?> login(@Validated UserRequestDto.LoginDto loginDto, Errors errors) {
+        // validation check
+        if(errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
+        return userService.login(loginDto);
+    }
+
+    /**
+     * <p> 토큰 갱신 </p>
+     *
+     * @param updateTokenDto
+     * @param errors
+     * @return
+     */
+    @PostMapping("/update-token")
+    public ResponseEntity<?> updateToken(@Validated UserRequestDto.UpdateTokenDto updateTokenDto, Errors errors) {
+        // validation check
+        if(errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
+        return userService.updateToken(updateTokenDto);
     }
 }

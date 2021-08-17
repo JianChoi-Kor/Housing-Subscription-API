@@ -27,12 +27,16 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath email = createString("email");
 
+    public final StringPath fcmToken = createString("fcmToken");
+
     public final NumberPath<Long> idx = createNumber("idx", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
 
     public final StringPath password = createString("password");
+
+    public final StringPath refreshToken = createString("refreshToken");
 
     public final ListPath<String, StringPath> roles = this.<String, StringPath>createList("roles", String.class, StringPath.class, PathInits.DIRECT2);
 

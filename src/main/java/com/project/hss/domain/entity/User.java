@@ -29,6 +29,10 @@ public class User extends BaseTime implements UserDetails {
 
     private String password;
 
+    private String refreshToken;
+
+    private String fcmToken;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
