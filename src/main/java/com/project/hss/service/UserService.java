@@ -7,13 +7,19 @@ import com.project.hss.domain.entity.User;
 import com.project.hss.repository.UserRepository;
 import com.project.hss.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -22,6 +28,10 @@ public class UserService {
     private final Response response;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisTemplate redisTemplate;
+
+    @Value("${hss.redis.RT.key}")
+    private String rRTKey;
 
     public ResponseEntity<?> signUp(UserRequestDto.SignUpDto signUpDto) {
         if (userRepository.findByEmail(signUpDto.getEmail()).orElse(null) != null) {
@@ -38,16 +48,22 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(UserRequestDto.LoginDto loginDto) {
-        User user = userRepository.findByEmail(loginDto.getEmail()).orElse(null);
-        if(user == null) {
-            response.fail("존재하지 않는 이메일입니다.", HttpStatus.BAD_REQUEST);
+        Optional<User> userOptional = userRepository.findByEmail(loginDto.getEmail());
+        if(!userOptional.isPresent()) {
+            return response.fail("존재하지 않는 이메일입니다.", HttpStatus.BAD_REQUEST);
         }
+        User user = userOptional.get();
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
         String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getRoles());
         String refreshToken = jwtTokenProvider.createRefreshToken();
         UserResponseDto.TokenInfo tokenInfo = new UserResponseDto.TokenInfo(accessToken, refreshToken);
+
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        valueOperations.set(rRTKey + user.getIdx(), refreshToken);
+
+        log.info("redis RT : {}", valueOperations.get(rRTKey + user.getIdx()));
 
         return response.success(tokenInfo);
     }
