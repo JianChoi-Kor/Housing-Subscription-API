@@ -50,8 +50,12 @@ public class MembersController {
         return membersService.reissue(reissue);
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<?> logout() {
-        return membersService.logout();
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@Validated MembersReqDto.Logout logout, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
+        return membersService.logout(logout);
     }
 }
