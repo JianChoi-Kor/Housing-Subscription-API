@@ -85,7 +85,7 @@ public class ApplyhomeInfoSvcController {
 
     // APT 분양 정보 조회
     @GetMapping("/getLttotPblancList")
-    public ResponseEntity<?> getLttotPblancList(LttotPblancList lttotPblancList) {
+    public ResponseEntity<?> getLttotPblancList(LttotPblancList lttotPblancList) throws IOException {
         return applyhomeInfoSvcService.getLttotPblancList(lttotPblancList);
     }
 
