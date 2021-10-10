@@ -5,7 +5,6 @@ import com.project.hss.api.v1.dto.Response;
 import com.project.hss.api.v1.dto.request.MembersReqDto;
 import com.project.hss.api.v1.service.MembersService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +14,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 @Tag(name = "Member", description = "청약알림이 회원가입, 로그인, 로그아웃, 토큰 재발급")
 @Slf4j
