@@ -3,11 +3,15 @@ package com.project.hss.api.v1.controller;
 import com.project.hss.api.v1.dto.request.api.*;
 import com.project.hss.api.v1.dto.response.api.Response;
 import com.project.hss.api.v1.service.ApplyhomeInfoSvcService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,9 +25,12 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+@Tag(name = "ApplyhomeInfoSvc", description = "전국 청약 분양정보 조회 서비스 api 데이터 요청")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/hhs")
@@ -83,56 +90,64 @@ public class ApplyhomeInfoSvcController {
         return response.success(result);
     }
 
-    // APT 분양 정보 조회
-    @GetMapping("/getLttotPblancList")
+    @Operation(summary = "APT 분양 정보 조회", description = "APT 분양 정보 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getLttotPblancList")
     public ResponseEntity<?> getLttotPblancList(LttotPblancList lttotPblancList) throws IOException {
+
+        // TODO
+        List<String> sidoList = Arrays.asList("강원", "경기", "경남", "경북", "광주", "대구", "대전", "부산", "서울",
+                "세종", "울산", "인천", "전남", "전북", "제주", "충남", "충북", "기타");
+        if (lttotPblancList.getSido() != null && !sidoList.contains(lttotPblancList.getSido())) {
+            return response.fail("공급지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+
         return applyhomeInfoSvcService.getLttotPblancList(lttotPblancList);
     }
 
-    // 오피스텔/도시형/(공공지원)민간임대 분양정보 조회
-    @GetMapping("/getNotAPTLttotPblancList")
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getNotAPTLttotPblancList")
     public ResponseEntity<?> getNotAPTLttotPblancList(NotAPTLttotPblancList notAPTLttotPblancList) {
         return applyhomeInfoSvcService.getNotAPTLttotPblancList(notAPTLttotPblancList);
     }
 
-    // APT무순위/취소후재공급 분양정보 조회
-    @GetMapping("/getRemndrLttotPblancList")
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 조회", description = "APT무순위/취소후재공급 분양정보 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getRemndrLttotPblancList")
     public ResponseEntity<?> getRemndrLttotPblancList(RemndrLttotPblancList remndrLttotPblancList) {
         return applyhomeInfoSvcService.getRemndrLttotPblancList(remndrLttotPblancList);
     }
 
-    // APT 분양정보 상세 조회
-    @GetMapping("/getAPTLttotPblancDetail")
+    @Operation(summary = "APT 분양정보 상세 조회", description = "APT 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getAPTLttotPblancDetail")
     public ResponseEntity<?> getAPTLttotPblancDetail(APTLttotPblancDetail aptLttotPblancDetail) {
         return applyhomeInfoSvcService.getAPTLttotPblancDetail(aptLttotPblancDetail);
     }
 
-    // 오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회
-    @GetMapping("/getUrbtyOfctlLttotPblancDetail")
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getUrbtyOfctlLttotPblancDetail")
     public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetail urbtyOfctlLttotPblancDetail) {
         return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancDetail(urbtyOfctlLttotPblancDetail);
     }
 
-    // APT무순위/취소후재공급 분양정보 상세 조회
-    @GetMapping("/getRemndrLttotPblancDetail")
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 상세 조회", description = "APT무순위/취소후재공급 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getRemndrLttotPblancDetail")
     public ResponseEntity<?> getRemndrLttotPblancDetail(RemndrLttotPblancDetail remndrLttotPblancDetail) {
         return applyhomeInfoSvcService.getRemndrLttotPblancDetail(remndrLttotPblancDetail);
     }
 
-    // APT 분양정보 주택형별 상세 조회
-    @GetMapping("/getAPTLttotPblancMdl")
+    @Operation(summary = "APT 분양정보 주택형별 상세 조회", description = "APT 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getAPTLttotPblancMdl")
     public ResponseEntity<?> getAPTLttotPblancMdl(APTLttotPblancMdl aptLttotPblancMdl) {
         return applyhomeInfoSvcService.getAPTLttotPblancMdl(aptLttotPblancMdl);
     }
 
-    // 오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회
-    @GetMapping("/getUrbtyOfctlLttotPblancMdl")
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getUrbtyOfctlLttotPblancMdl")
     public ResponseEntity<?> getUrbtyOfctlLttotPblancMdl(UrbtyOfctlLttotPblancMdl urbtyOfctlLttotPblancMdl) {
         return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancMdl(urbtyOfctlLttotPblancMdl);
     }
 
-    // APT무순위/취소후재공급 분양정보 주택형별 상세 조회
-    @GetMapping("/getRemndrLttotPblancMdl")
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", description = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
+    @PostMapping("/getRemndrLttotPblancMdl")
     public ResponseEntity<?> getRemndrLttotPblancMdl(RemndrLttotPblancMdl remndrLttotPblancMdl) {
         return applyhomeInfoSvcService.getRemndrLttotPblancMdl(remndrLttotPblancMdl);
     }
