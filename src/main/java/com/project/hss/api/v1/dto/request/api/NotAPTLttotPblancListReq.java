@@ -22,6 +22,5 @@ public class NotAPTLttotPblancListReq {
     private String endmonth;
 
     @Schema(description = "주택 구분 (0201: 도시형생활주택, 0202: 오피스텔, 0203: 민간임대, 0303: 공공지원민간임대)", example = "0201")
-    @Pattern(regexp = "[0201|0202|0203|0303]", message = "주택구분값이 올바르지 않습니다.")
     private String searchHouseSecd;
 }
