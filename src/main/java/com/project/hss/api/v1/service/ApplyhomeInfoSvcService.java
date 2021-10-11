@@ -1,6 +1,7 @@
 package com.project.hss.api.v1.service;
 
 import com.project.hss.api.v1.dto.request.api.*;
+import com.project.hss.api.v1.dto.response.api.APTLttotPblancDetailRes;
 import com.project.hss.api.v1.dto.response.api.LttotPblancListRes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +27,10 @@ public class ApplyhomeInfoSvcService {
 
     private final com.project.hss.api.v1.dto.Response response;
 
+    private final static String openApiBaseUrl = "http://openapi.reb.or.kr/OpenAPI_ToolInstallPackage/service/rest/ApplyhomeInfoSvc";
+
     @Value("${openapi.decoding.key}")
     private String decodingKey;
-
-    @Value("${openapi.encoding.key}")
-    private String encodingKey;
 
     public ResponseEntity<?> getLttotPblancList(LttotPblancListReq lttotPblancListReq) throws IOException {
         // sido check
@@ -40,7 +40,7 @@ public class ApplyhomeInfoSvcService {
             return response.fail("공급지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        StringBuilder urlBuilder = new StringBuilder("http://openapi.reb.or.kr/OpenAPI_ToolInstallPackage/service/rest/ApplyhomeInfoSvc/getLttotPblancList"); /*URL*/
+        StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getLttotPblancList"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + URLEncoder.encode(decodingKey, "UTF-8")); /*공공데이터포털에서 받은 인증키*/
         urlBuilder.append("&" + URLEncoder.encode("startmonth","UTF-8") + "=" + URLEncoder.encode(lttotPblancListReq.getStartmonth(), "UTF-8")); /*월 단위 모집공고일 (검색시작월)*/
         urlBuilder.append("&" + URLEncoder.encode("endmonth","UTF-8") + "=" + URLEncoder.encode(lttotPblancListReq.getEndmonth(), "UTF-8")); /*월 단위 모집공고일 (검색종료월, 최대 12개월)*/
@@ -97,8 +97,43 @@ public class ApplyhomeInfoSvcService {
         return response.success();
     }
 
-    public ResponseEntity<?> getAPTLttotPblancDetail(APTLttotPblancDetailReq aptLttotPblancDetailReq) {
-        return response.success();
+    public ResponseEntity<?> getAPTLttotPblancDetail(APTLttotPblancDetailReq aptLttotPblancDetailReq) throws IOException {
+        StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getAPTLttotPblancDetail");
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + URLEncoder.encode(decodingKey, "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("houseManageNo","UTF-8") + "=" + URLEncoder.encode(aptLttotPblancDetailReq.getHouseManageNo(), "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("pblancNo","UTF-8") + "=" + URLEncoder.encode(aptLttotPblancDetailReq.getPblancNo(), "UTF-8"));
+
+        URL url = new URL(urlBuilder.toString());
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+
+        BufferedReader rd;
+        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        String xml = sb.toString();
+
+        Map<String, APTLttotPblancDetailRes> result = new HashMap<>();
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(APTLttotPblancDetailRes.class); // JAXB Context 생성
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();  // Unmarshaller Object 생성
+            APTLttotPblancDetailRes aptLttotPblancDetailRes = (APTLttotPblancDetailRes) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
+            result.put("response", aptLttotPblancDetailRes);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return response.success(result);
     }
 
     public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq) {

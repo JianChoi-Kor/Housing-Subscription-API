@@ -17,7 +17,7 @@ public class APTLttotPblancDetailReq {
     private String houseManageNo;
 
     @Schema(description = "공고번호", example = "2020000010")
-    @Pattern(regexp = "^[0-9]$", message = "공고번호가 올바르지 않습니다.")
+    @Pattern(regexp = "^[0-9]*$", message = "공고번호가 올바르지 않습니다.")
     @NotBlank(message = "공고번호는 필수입니다.")
     private String pblancNo;
 }

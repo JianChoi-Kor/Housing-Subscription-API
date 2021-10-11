@@ -41,57 +41,7 @@ public class ApplyhomeInfoSvcController {
     private final ApplyhomeInfoSvcService applyhomeInfoSvcService;
     private final com.project.hss.api.v1.dto.Response response;
 
-    @Value("${openapi.decoding.key}")
-    private String decodingKey;
-
-    @Value("${openapi.encoding.key}")
-    private String encodingKey;
-
-    @GetMapping("/test")
-    public ResponseEntity<?> apiTest() throws IOException, JAXBException {
-
-        StringBuilder urlBuilder = new StringBuilder("http://openapi.reb.or.kr/OpenAPI_ToolInstallPackage/service/rest/ApplyhomeInfoSvc/getLttotPblancList"); /*URL*/
-        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + URLEncoder.encode(decodingKey, "UTF-8")); /*공공데이터포털에서 받은 인증키*/
-        urlBuilder.append("&" + URLEncoder.encode("startmonth","UTF-8") + "=" + URLEncoder.encode("202101", "UTF-8")); /*월 단위 모집공고일 (검색시작월)*/
-        urlBuilder.append("&" + URLEncoder.encode("endmonth","UTF-8") + "=" + URLEncoder.encode("202103", "UTF-8")); /*월 단위 모집공고일 (검색종료월, 최대 12개월)*/
-        urlBuilder.append("&" + URLEncoder.encode("houseSecd","UTF-8") + "=" + URLEncoder.encode("01", "UTF-8")); /*주택구분*/
-        urlBuilder.append("&" + URLEncoder.encode("sido","UTF-8") + "=" + URLEncoder.encode("부산", "UTF-8")); /*공급지역*/
-        urlBuilder.append("&" + URLEncoder.encode("houseName","UTF-8") + "=" + URLEncoder.encode("", "UTF-8")); /*주택명*/
-        urlBuilder.append("&" + URLEncoder.encode("rentSecd","UTF-8") + "=" + URLEncoder.encode("0", "UTF-8")); /*분양/임대 구분값*/
-        URL url = new URL(urlBuilder.toString());
-
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-
-        BufferedReader rd;
-        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-        }
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        String xml = sb.toString();
-
-        Map<String, LttotPblancListRes> result = new HashMap<>();
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(LttotPblancListRes.class); // JAXB Context 생성
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();  // Unmarshaller Object 생성
-            LttotPblancListRes apiLttotPblancListRes = (LttotPblancListRes) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
-            result.put("response", apiLttotPblancListRes);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-        return response.success(result);
-    }
-
-    @Operation(summary = "APT 분양 정보 조회", description = "APT 분양 정보 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
+    @Operation(summary = "APT 분양 정보 조회 (완)", description = "APT 분양 정보 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getLttotPblancList")
     public ResponseEntity<?> getLttotPblancList(@Validated LttotPblancListReq lttotPblancListReq, Errors errors) throws IOException {
         // validation check
@@ -101,51 +51,83 @@ public class ApplyhomeInfoSvcController {
         return applyhomeInfoSvcService.getLttotPblancList(lttotPblancListReq);
     }
 
-    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getNotAPTLttotPblancList")
-    public ResponseEntity<?> getNotAPTLttotPblancList(NotAPTLttotPblancListReq notAPTLttotPblancListReq) {
+    public ResponseEntity<?> getNotAPTLttotPblancList(@Validated NotAPTLttotPblancListReq notAPTLttotPblancListReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getNotAPTLttotPblancList(notAPTLttotPblancListReq);
     }
 
-    @Operation(summary = "APT무순위/취소후재공급 분양정보 조회", description = "APT무순위/취소후재공급 분양정보 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 조회", description = "APT무순위/취소후재공급 분양정보 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getRemndrLttotPblancList")
-    public ResponseEntity<?> getRemndrLttotPblancList(RemndrLttotPblancListReq remndrLttotPblancListReq) {
+    public ResponseEntity<?> getRemndrLttotPblancList(@Validated RemndrLttotPblancListReq remndrLttotPblancListReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getRemndrLttotPblancList(remndrLttotPblancListReq);
     }
 
-    @Operation(summary = "APT 분양정보 상세 조회", description = "APT 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "APT 분양정보 상세 조회", description = "APT 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getAPTLttotPblancDetail")
-    public ResponseEntity<?> getAPTLttotPblancDetail(APTLttotPblancDetailReq aptLttotPblancDetailReq) {
+    public ResponseEntity<?> getAPTLttotPblancDetail(@Validated APTLttotPblancDetailReq aptLttotPblancDetailReq, Errors errors) throws IOException {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getAPTLttotPblancDetail(aptLttotPblancDetailReq);
     }
 
-    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getUrbtyOfctlLttotPblancDetail")
-    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq) {
+    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(@Validated UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancDetail(urbtyOfctlLttotPblancDetailReq);
     }
 
-    @Operation(summary = "APT무순위/취소후재공급 분양정보 상세 조회", description = "APT무순위/취소후재공급 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 상세 조회", description = "APT무순위/취소후재공급 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getRemndrLttotPblancDetail")
-    public ResponseEntity<?> getRemndrLttotPblancDetail(RemndrLttotPblancDetailReq remndrLttotPblancDetailReq) {
+    public ResponseEntity<?> getRemndrLttotPblancDetail(@Validated RemndrLttotPblancDetailReq remndrLttotPblancDetailReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getRemndrLttotPblancDetail(remndrLttotPblancDetailReq);
     }
 
-    @Operation(summary = "APT 분양정보 주택형별 상세 조회", description = "APT 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "APT 분양정보 주택형별 상세 조회", description = "APT 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getAPTLttotPblancMdl")
-    public ResponseEntity<?> getAPTLttotPblancMdl(APTLttotPblancMdlReq aptLttotPblancMdlReq) {
+    public ResponseEntity<?> getAPTLttotPblancMdl(@Validated APTLttotPblancMdlReq aptLttotPblancMdlReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getAPTLttotPblancMdl(aptLttotPblancMdlReq);
     }
 
-    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getUrbtyOfctlLttotPblancMdl")
-    public ResponseEntity<?> getUrbtyOfctlLttotPblancMdl(UrbtyOfctlLttotPblancMdlReq urbtyOfctlLttotPblancMdlReq) {
+    public ResponseEntity<?> getUrbtyOfctlLttotPblancMdl(@Validated UrbtyOfctlLttotPblancMdlReq urbtyOfctlLttotPblancMdlReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancMdl(urbtyOfctlLttotPblancMdlReq);
     }
 
-    @Operation(summary = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", description = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", description = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getRemndrLttotPblancMdl")
-    public ResponseEntity<?> getRemndrLttotPblancMdl(RemndrLttotPblancMdlReq remndrLttotPblancMdlReq) {
+    public ResponseEntity<?> getRemndrLttotPblancMdl(@Validated RemndrLttotPblancMdlReq remndrLttotPblancMdlReq, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
         return applyhomeInfoSvcService.getRemndrLttotPblancMdl(remndrLttotPblancMdlReq);
     }
 }

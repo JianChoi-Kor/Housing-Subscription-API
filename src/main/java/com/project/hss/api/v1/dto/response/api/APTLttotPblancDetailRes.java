@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "response")
-public class APTLttotPblancDetail {
+public class APTLttotPblancDetailRes {
 
     @XmlElement(name = "header")
     private Header header;
