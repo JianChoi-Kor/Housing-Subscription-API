@@ -1,8 +1,7 @@
 package com.project.hss.api.v1.service;
 
 import com.project.hss.api.v1.dto.request.api.*;
-import com.project.hss.api.v1.dto.response.api.APTLttotPblancDetailRes;
-import com.project.hss.api.v1.dto.response.api.LttotPblancListRes;
+import com.project.hss.api.v1.dto.response.api.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -136,16 +135,121 @@ public class ApplyhomeInfoSvcService {
         return response.success(result);
     }
 
-    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq) {
-        return response.success();
+    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq) throws IOException {
+        StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getUrbtyOfctlLttotPblancDetail");
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + URLEncoder.encode(decodingKey, "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("houseManageNo","UTF-8") + "=" + URLEncoder.encode(urbtyOfctlLttotPblancDetailReq.getHouseManageNo(), "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("pblancNo","UTF-8") + "=" + URLEncoder.encode(urbtyOfctlLttotPblancDetailReq.getPblancNo(), "UTF-8"));
+
+        URL url = new URL(urlBuilder.toString());
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+
+        BufferedReader rd;
+        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        String xml = sb.toString();
+
+        Map<String, UrbtyOfctlLttotPblancDetailRes> result = new HashMap<>();
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(UrbtyOfctlLttotPblancDetailRes.class); // JAXB Context 생성
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();  // Unmarshaller Object 생성
+            UrbtyOfctlLttotPblancDetailRes urbtyOfctlLttotPblancDetailRes = (UrbtyOfctlLttotPblancDetailRes) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
+            result.put("response", urbtyOfctlLttotPblancDetailRes);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return response.success(result);
     }
 
-    public ResponseEntity<?> getRemndrLttotPblancDetail(RemndrLttotPblancDetailReq remndrLttotPblancDetailReq) {
-        return response.success();
+    public ResponseEntity<?> getRemndrLttotPblancDetail(RemndrLttotPblancDetailReq remndrLttotPblancDetailReq) throws IOException {
+        StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getRemndrLttotPblancDetail");
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + URLEncoder.encode(decodingKey, "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("houseManageNo","UTF-8") + "=" + URLEncoder.encode(remndrLttotPblancDetailReq.getHouseManageNo(), "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("pblancNo","UTF-8") + "=" + URLEncoder.encode(remndrLttotPblancDetailReq.getPblancNo(), "UTF-8"));
+
+        URL url = new URL(urlBuilder.toString());
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+
+        BufferedReader rd;
+        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        String xml = sb.toString();
+
+        Map<String, RemndrLttotPblancDetailRes> result = new HashMap<>();
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(RemndrLttotPblancDetailRes.class); // JAXB Context 생성
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();  // Unmarshaller Object 생성
+            RemndrLttotPblancDetailRes remndrLttotPblancDetailRes = (RemndrLttotPblancDetailRes) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
+            result.put("response", remndrLttotPblancDetailRes);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return response.success(result);
     }
 
-    public ResponseEntity<?> getAPTLttotPblancMdl(APTLttotPblancMdlReq aptLttotPblancMdlReq) {
-        return response.success();
+    public ResponseEntity<?> getAPTLttotPblancMdl(APTLttotPblancMdlReq aptLttotPblancMdlReq) throws IOException {
+        StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getAPTLttotPblancMdl");
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + URLEncoder.encode(decodingKey, "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("houseManageNo","UTF-8") + "=" + URLEncoder.encode(aptLttotPblancMdlReq.getHouseManageNo(), "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("pblancNo","UTF-8") + "=" + URLEncoder.encode(aptLttotPblancMdlReq.getPblancNo(), "UTF-8"));
+
+        URL url = new URL(urlBuilder.toString());
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+
+        BufferedReader rd;
+        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        String xml = sb.toString();
+
+        Map<String, APTLttotPblancMdlRes> result = new HashMap<>();
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(APTLttotPblancMdlRes.class); // JAXB Context 생성
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();  // Unmarshaller Object 생성
+            APTLttotPblancMdlRes aptLttotPblancMdlRes = (APTLttotPblancMdlRes) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
+            result.put("response", aptLttotPblancMdlRes);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return response.success(result);
     }
 
     public ResponseEntity<?> getUrbtyOfctlLttotPblancMdl(UrbtyOfctlLttotPblancMdlReq urbtyOfctlLttotPblancMdlReq) {

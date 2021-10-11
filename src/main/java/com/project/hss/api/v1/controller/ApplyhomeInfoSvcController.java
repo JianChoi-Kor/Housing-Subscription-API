@@ -81,9 +81,9 @@ public class ApplyhomeInfoSvcController {
         return applyhomeInfoSvcService.getAPTLttotPblancDetail(aptLttotPblancDetailReq);
     }
 
-    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
+    @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회 (완)", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getUrbtyOfctlLttotPblancDetail")
-    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(@Validated UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq, Errors errors) {
+    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(@Validated UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq, Errors errors) throws IOException {
         // validation check
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));
@@ -91,9 +91,9 @@ public class ApplyhomeInfoSvcController {
         return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancDetail(urbtyOfctlLttotPblancDetailReq);
     }
 
-    @Operation(summary = "APT무순위/취소후재공급 분양정보 상세 조회", description = "APT무순위/취소후재공급 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
+    @Operation(summary = "APT무순위/취소후재공급 분양정보 상세 조회 (완)", description = "APT무순위/취소후재공급 분양정보 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getRemndrLttotPblancDetail")
-    public ResponseEntity<?> getRemndrLttotPblancDetail(@Validated RemndrLttotPblancDetailReq remndrLttotPblancDetailReq, Errors errors) {
+    public ResponseEntity<?> getRemndrLttotPblancDetail(@Validated RemndrLttotPblancDetailReq remndrLttotPblancDetailReq, Errors errors) throws IOException {
         // validation check
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));
@@ -101,9 +101,9 @@ public class ApplyhomeInfoSvcController {
         return applyhomeInfoSvcService.getRemndrLttotPblancDetail(remndrLttotPblancDetailReq);
     }
 
-    @Operation(summary = "APT 분양정보 주택형별 상세 조회", description = "APT 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
+    @Operation(summary = "APT 분양정보 주택형별 상세 조회 (완)", description = "APT 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getAPTLttotPblancMdl")
-    public ResponseEntity<?> getAPTLttotPblancMdl(@Validated APTLttotPblancMdlReq aptLttotPblancMdlReq, Errors errors) {
+    public ResponseEntity<?> getAPTLttotPblancMdl(@Validated APTLttotPblancMdlReq aptLttotPblancMdlReq, Errors errors) throws IOException {
         // validation check
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));
