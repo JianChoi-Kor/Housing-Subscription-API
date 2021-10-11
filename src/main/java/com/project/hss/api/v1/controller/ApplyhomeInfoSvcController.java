@@ -1,15 +1,18 @@
 package com.project.hss.api.v1.controller;
 
+import com.project.hss.api.lib.Helper;
 import com.project.hss.api.v1.dto.request.api.*;
-import com.project.hss.api.v1.dto.response.api.Response;
+import com.project.hss.api.v1.dto.response.api.LttotPblancListRes;
 import com.project.hss.api.v1.service.ApplyhomeInfoSvcService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +28,7 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Tag(name = "ApplyhomeInfoSvc", description = "전국 청약 분양정보 조회 서비스 api 데이터 요청")
@@ -78,77 +79,73 @@ public class ApplyhomeInfoSvcController {
         conn.disconnect();
         String xml = sb.toString();
 
-        Map<String, Response> result = new HashMap<>();
+        Map<String, LttotPblancListRes> result = new HashMap<>();
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(Response.class); // JAXB Context 생성
+            JAXBContext jaxbContext = JAXBContext.newInstance(LttotPblancListRes.class); // JAXB Context 생성
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();  // Unmarshaller Object 생성
-            Response apiResponse = (Response) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
-            result.put("response", apiResponse);
+            LttotPblancListRes apiLttotPblancListRes = (LttotPblancListRes) unmarshaller.unmarshal(new StringReader(xml)); // unmarshall 메서드 호출
+            result.put("response", apiLttotPblancListRes);
         } catch (JAXBException e) {
             e.printStackTrace();
         }
         return response.success(result);
     }
 
-    @Operation(summary = "APT 분양 정보 조회", description = "APT 분양 정보 조회", tags = "ApplyhomeInfoSvc")
+    @Operation(summary = "APT 분양 정보 조회", description = "APT 분양 정보 조회", tags = "ApplyhomeInfoSvc", security = {@SecurityRequirement(name = "Bearer")})
     @PostMapping("/getLttotPblancList")
-    public ResponseEntity<?> getLttotPblancList(LttotPblancList lttotPblancList) throws IOException {
-
-        // TODO
-        List<String> sidoList = Arrays.asList("강원", "경기", "경남", "경북", "광주", "대구", "대전", "부산", "서울",
-                "세종", "울산", "인천", "전남", "전북", "제주", "충남", "충북", "기타");
-        if (lttotPblancList.getSido() != null && !sidoList.contains(lttotPblancList.getSido())) {
-            return response.fail("공급지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> getLttotPblancList(@Validated LttotPblancListReq lttotPblancListReq, Errors errors) throws IOException {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
         }
-
-        return applyhomeInfoSvcService.getLttotPblancList(lttotPblancList);
+        return applyhomeInfoSvcService.getLttotPblancList(lttotPblancListReq);
     }
 
     @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getNotAPTLttotPblancList")
-    public ResponseEntity<?> getNotAPTLttotPblancList(NotAPTLttotPblancList notAPTLttotPblancList) {
-        return applyhomeInfoSvcService.getNotAPTLttotPblancList(notAPTLttotPblancList);
+    public ResponseEntity<?> getNotAPTLttotPblancList(NotAPTLttotPblancListReq notAPTLttotPblancListReq) {
+        return applyhomeInfoSvcService.getNotAPTLttotPblancList(notAPTLttotPblancListReq);
     }
 
     @Operation(summary = "APT무순위/취소후재공급 분양정보 조회", description = "APT무순위/취소후재공급 분양정보 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getRemndrLttotPblancList")
-    public ResponseEntity<?> getRemndrLttotPblancList(RemndrLttotPblancList remndrLttotPblancList) {
-        return applyhomeInfoSvcService.getRemndrLttotPblancList(remndrLttotPblancList);
+    public ResponseEntity<?> getRemndrLttotPblancList(RemndrLttotPblancListReq remndrLttotPblancListReq) {
+        return applyhomeInfoSvcService.getRemndrLttotPblancList(remndrLttotPblancListReq);
     }
 
     @Operation(summary = "APT 분양정보 상세 조회", description = "APT 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getAPTLttotPblancDetail")
-    public ResponseEntity<?> getAPTLttotPblancDetail(APTLttotPblancDetail aptLttotPblancDetail) {
-        return applyhomeInfoSvcService.getAPTLttotPblancDetail(aptLttotPblancDetail);
+    public ResponseEntity<?> getAPTLttotPblancDetail(APTLttotPblancDetailReq aptLttotPblancDetailReq) {
+        return applyhomeInfoSvcService.getAPTLttotPblancDetail(aptLttotPblancDetailReq);
     }
 
     @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getUrbtyOfctlLttotPblancDetail")
-    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetail urbtyOfctlLttotPblancDetail) {
-        return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancDetail(urbtyOfctlLttotPblancDetail);
+    public ResponseEntity<?> getUrbtyOfctlLttotPblancDetail(UrbtyOfctlLttotPblancDetailReq urbtyOfctlLttotPblancDetailReq) {
+        return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancDetail(urbtyOfctlLttotPblancDetailReq);
     }
 
     @Operation(summary = "APT무순위/취소후재공급 분양정보 상세 조회", description = "APT무순위/취소후재공급 분양정보 상세 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getRemndrLttotPblancDetail")
-    public ResponseEntity<?> getRemndrLttotPblancDetail(RemndrLttotPblancDetail remndrLttotPblancDetail) {
-        return applyhomeInfoSvcService.getRemndrLttotPblancDetail(remndrLttotPblancDetail);
+    public ResponseEntity<?> getRemndrLttotPblancDetail(RemndrLttotPblancDetailReq remndrLttotPblancDetailReq) {
+        return applyhomeInfoSvcService.getRemndrLttotPblancDetail(remndrLttotPblancDetailReq);
     }
 
     @Operation(summary = "APT 분양정보 주택형별 상세 조회", description = "APT 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getAPTLttotPblancMdl")
-    public ResponseEntity<?> getAPTLttotPblancMdl(APTLttotPblancMdl aptLttotPblancMdl) {
-        return applyhomeInfoSvcService.getAPTLttotPblancMdl(aptLttotPblancMdl);
+    public ResponseEntity<?> getAPTLttotPblancMdl(APTLttotPblancMdlReq aptLttotPblancMdlReq) {
+        return applyhomeInfoSvcService.getAPTLttotPblancMdl(aptLttotPblancMdlReq);
     }
 
     @Operation(summary = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", description = "오피스텔/도시형/(공공지원)민간임대 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getUrbtyOfctlLttotPblancMdl")
-    public ResponseEntity<?> getUrbtyOfctlLttotPblancMdl(UrbtyOfctlLttotPblancMdl urbtyOfctlLttotPblancMdl) {
-        return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancMdl(urbtyOfctlLttotPblancMdl);
+    public ResponseEntity<?> getUrbtyOfctlLttotPblancMdl(UrbtyOfctlLttotPblancMdlReq urbtyOfctlLttotPblancMdlReq) {
+        return applyhomeInfoSvcService.getUrbtyOfctlLttotPblancMdl(urbtyOfctlLttotPblancMdlReq);
     }
 
     @Operation(summary = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", description = "APT무순위/취소후재공급 분양정보 주택형별 상세 조회", tags = "ApplyhomeInfoSvc")
     @PostMapping("/getRemndrLttotPblancMdl")
-    public ResponseEntity<?> getRemndrLttotPblancMdl(RemndrLttotPblancMdl remndrLttotPblancMdl) {
-        return applyhomeInfoSvcService.getRemndrLttotPblancMdl(remndrLttotPblancMdl);
+    public ResponseEntity<?> getRemndrLttotPblancMdl(RemndrLttotPblancMdlReq remndrLttotPblancMdlReq) {
+        return applyhomeInfoSvcService.getRemndrLttotPblancMdl(remndrLttotPblancMdlReq);
     }
 }

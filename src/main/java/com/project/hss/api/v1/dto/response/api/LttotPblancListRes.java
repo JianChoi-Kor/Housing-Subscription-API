@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "response")
-public class Response {
+public class LttotPblancListRes {
 
     @XmlElement(name = "header")
     private Header header;
