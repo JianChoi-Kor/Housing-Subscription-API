@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -23,6 +24,7 @@ public class MailUtils {
         return RandomStringUtils.randomNumeric(6);
     }
 
+    @Async("emailExecutor")
     public void sendMailForEmailCert(String email, String code) throws MessagingException {
         String html =
                 "<!DOCTYPE html><html lang=\"ko\"><head><meta charset=\"utf-8\"></head><body><div style=\"background: #f9f9f9;padding: 100px 0;\">\n"
