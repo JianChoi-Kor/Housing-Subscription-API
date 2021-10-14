@@ -35,6 +35,38 @@ public class MembersController {
         return membersService.signUp(signUp);
     }
 
+    @Operation(summary = "회원가입 인증 메일 전송", description = "회원가입 인증 이메일 전송", tags = "Member")
+    @PostMapping("/sign-up/email/send")
+    public ResponseEntity<?> sendEmail(@Validated MembersReqDto.SendEmail sendEmail, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
+        return membersService.sendEmail(sendEmail);
+    }
+
+    @Operation(summary = "회원가입 메일 인증", description = "회원가입 메일 인증", tags = "Member")
+    @PostMapping("/sign-up/email/cert")
+    public ResponseEntity<?> certEmail(@Validated MembersReqDto.CertEmail certEmail, Errors errors) {
+        // validation check
+        if (errors.hasErrors()) {
+            return response.invalidFields(Helper.refineErrors(errors));
+        }
+        return membersService.certEmail(certEmail);
+    }
+
+    @Operation(summary = "회원가입 인증 문자 전송", description = "회원가입 인증 문자 전송", tags = "Member")
+    @PostMapping("/sign-up/sms/send")
+    public ResponseEntity<?> sendSms() {
+        return response.success();
+    }
+
+    @Operation(summary = "회원가입 문자 인증", description = "회원가입 문자 인증", tags = "Member")
+    @PostMapping("/sign-up/sms/cert")
+    public ResponseEntity<?> certSms() {
+        return response.success();
+    }
+
     @Operation(summary = "로그인", description = "청약알림이 사용자 로그인", tags = "Member")
     @PostMapping("/login")
     public ResponseEntity<?> login(@Validated MembersReqDto.Login login, Errors errors) {

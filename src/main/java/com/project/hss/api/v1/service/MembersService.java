@@ -1,11 +1,15 @@
 package com.project.hss.api.v1.service;
 
+import com.project.hss.api.entity.MailAuth;
 import com.project.hss.api.entity.Members;
 import com.project.hss.api.enums.Authority;
+import com.project.hss.api.enums.MailAuthUsage;
 import com.project.hss.api.jwt.JwtTokenProvider;
+import com.project.hss.api.lib.MailUtils;
 import com.project.hss.api.v1.dto.Response;
 import com.project.hss.api.v1.dto.request.MembersReqDto;
 import com.project.hss.api.v1.dto.response.MembersResDto;
+import com.project.hss.api.v1.repository.MailAuthRepository;
 import com.project.hss.api.v1.repository.MembersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,7 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
@@ -26,11 +32,13 @@ import java.util.concurrent.TimeUnit;
 public class MembersService {
 
     private final MembersRepository membersRepository;
+    private final MailAuthRepository mailAuthRepository;
     private final Response response;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final RedisTemplate redisTemplate;
+    private final MailUtils mailUtils;
 
     public ResponseEntity<?> signUp(MembersReqDto.SignUp signUp) {
         if (membersRepository.existsByEmail(signUp.getEmail())) {
@@ -40,11 +48,45 @@ public class MembersService {
         Members member = Members.builder()
                 .email(signUp.getEmail())
                 .password(passwordEncoder.encode(signUp.getPassword()))
+                .phoneNumber(signUp.getPhoneNumber())
                 .roles(Collections.singletonList(Authority.ROLE_USER.name()))
                 .build();
         membersRepository.save(member);
 
         return response.success("회원가입에 성공했습니다.");
+    }
+
+    public ResponseEntity<?> sendEmail(MembersReqDto.SendEmail sendEmail) {
+        if (membersRepository.existsByEmail(sendEmail.getEmail())) {
+            return response.fail("이미 가입된 이메일입니다.", HttpStatus.BAD_REQUEST);
+        }
+        Optional<MailAuth> mailAuthOptional =
+                mailAuthRepository.findFirstByEmailAndAuthUsageOrderByIdxDesc(sendEmail.getEmail(), MailAuthUsage.SIGN_UP);
+        if (mailAuthOptional.isPresent()) {
+            MailAuth mailAuth = mailAuthOptional.get();
+            LocalDateTime sendExpire = mailAuth.getSendExpire();
+            if (LocalDateTime.now().isBefore(sendExpire)) {
+                return response.fail("이메일 재발송은 30초 이후 가능합니다.", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        String code = mailUtils.createVerifyCode();
+        // 이메일 전송
+        LocalDateTime now = LocalDateTime.now();
+        mailAuthRepository.save(MailAuth.builder()
+                .email(sendEmail.getEmail())
+                .code(code)
+                .authUsage(MailAuthUsage.SIGN_UP)
+                .sendExpire(now.plusSeconds(30))
+                .verifyExpire(now.plusMinutes(3))
+                .validTime(now.plusMinutes(10))
+                .build());
+
+        return response.success("인증 메일이 발송되었습니다.");
+    }
+
+    public ResponseEntity<?> certEmail(MembersReqDto.CertEmail certEmail) {
+        return response.success();
     }
 
     public ResponseEntity<?> login(MembersReqDto.Login login) {

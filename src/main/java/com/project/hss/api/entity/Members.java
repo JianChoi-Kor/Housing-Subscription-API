@@ -30,6 +30,9 @@ public class Members extends BaseTime implements UserDetails {
     private String password;
 
     @Column
+    private String phoneNumber;
+
+    @Column
     private String fcmToken;
 
     @Column
