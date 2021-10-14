@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
@@ -56,7 +57,7 @@ public class MembersService {
         return response.success("회원가입에 성공했습니다.");
     }
 
-    public ResponseEntity<?> sendEmail(MembersReqDto.SendEmail sendEmail) {
+    public ResponseEntity<?> sendEmail(MembersReqDto.SendEmail sendEmail) throws MessagingException {
         if (membersRepository.existsByEmail(sendEmail.getEmail())) {
             return response.fail("이미 가입된 이메일입니다.", HttpStatus.BAD_REQUEST);
         }
@@ -72,6 +73,8 @@ public class MembersService {
 
         String code = mailUtils.createVerifyCode();
         // 이메일 전송
+        mailUtils.sendMailForEmailCert(sendEmail.getEmail(), code);
+
         LocalDateTime now = LocalDateTime.now();
         mailAuthRepository.save(MailAuth.builder()
                 .email(sendEmail.getEmail())

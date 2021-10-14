@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class Members extends BaseTime implements UserDetails {
 
     @Id
+    @Column(name = "member_idx")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
 

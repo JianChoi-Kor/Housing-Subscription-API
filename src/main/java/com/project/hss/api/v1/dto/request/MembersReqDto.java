@@ -13,21 +13,21 @@ public class MembersReqDto {
     @Getter
     @Setter
     public static class SignUp {
-        @Schema(name = "이메일", example = "test@gmail.com")
+        @Schema(description = "이메일", example = "test@gmail.com")
         @NotEmpty(message = "이메일은 필수 입력값입니다.")
         @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$", message = "이메일 형식에 맞지 않습니다.")
         private String email;
 
-        @Schema(name = "비밀번호", example = "test1234!")
+        @Schema(description = "비밀번호", example = "test1234!")
         @NotEmpty(message = "비밀번호는 필수 입력값입니다.")
         @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,16}$", message = "비밀번호는 8~16자 영문 대 소문자, 숫자, 특수문자를 사용하세요.")
         private String password;
 
-        @Schema(name = "비밀번호 재입력", example = "test1234!")
+        @Schema(description = "비밀번호 재입력", example = "test1234!")
         @NotEmpty(message = "비밀번호 재입력은 필수 입력값입니다.")
         private String passwordConfirm;
 
-        @Schema(name = "휴대폰번호", example = "01012345678")
+        @Schema(description = "휴대폰번호", example = "01012345678")
         @NotEmpty(message = "휴대폰번호는 필수 입력값입니다.")
         private String phoneNumber;
     }

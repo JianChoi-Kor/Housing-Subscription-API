@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.mail.MessagingException;
+
 @Tag(name = "Member", description = "청약알림이 회원가입, 로그인, 로그아웃, 토큰 재발급")
 @Slf4j
 @RequiredArgsConstructor
@@ -37,7 +39,7 @@ public class MembersController {
 
     @Operation(summary = "회원가입 인증 메일 전송", description = "회원가입 인증 이메일 전송", tags = "Member")
     @PostMapping("/sign-up/email/send")
-    public ResponseEntity<?> sendEmail(@Validated MembersReqDto.SendEmail sendEmail, Errors errors) {
+    public ResponseEntity<?> sendEmail(@Validated MembersReqDto.SendEmail sendEmail, Errors errors) throws MessagingException {
         // validation check
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));

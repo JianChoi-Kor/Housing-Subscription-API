@@ -44,6 +44,6 @@ public class MailAuth {
     private LocalDateTime validTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idx", insertable = false, updatable = false)
+    @JoinColumn(name = "member_idx", insertable = false, updatable = false)
     private Members members;
 }
