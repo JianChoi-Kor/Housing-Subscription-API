@@ -122,7 +122,7 @@ public class MembersService {
 
             MembersResDto.CertEmailSuccess certEmailSuccess = new MembersResDto.CertEmailSuccess();
             certEmailSuccess.setEmail(certEmail.getEmail());
-            certEmailSuccess.setVerifyCode(certEmailSuccess.getVerifyCode());
+            certEmailSuccess.setVerifyCode(mailAuth.getVerifyCode());
             return response.success(certEmailSuccess);
         }
         return response.fail("이메일 인증에 실패하였습니다.");
