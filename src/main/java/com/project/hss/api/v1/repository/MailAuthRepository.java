@@ -8,4 +8,8 @@ import java.util.Optional;
 
 public interface MailAuthRepository extends JpaRepository<MailAuth, Long> {
     Optional<MailAuth> findFirstByEmailAndAuthUsageOrderByIdxDesc(String email, MailAuthUsage mailAuthUsage);
+
+    Optional<MailAuth> findFirstByEmailAndCodeAndAuthUsage(String email, String code, MailAuthUsage mailAuthUsage);
+
+    Optional<MailAuth> findFirstByEmailAndVerifyCode(String email, String verifyCode);
 }

@@ -3,6 +3,7 @@ package com.project.hss.api.v1.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 public class MembersResDto {
 
@@ -14,5 +15,12 @@ public class MembersResDto {
         private String accessToken;
         private String refreshToken;
         private Long refreshTokenExpirationTime;
+    }
+
+    @Getter
+    @Setter
+    public static class CertEmailSuccess {
+        private String email;
+        private String verifyCode;
     }
 }

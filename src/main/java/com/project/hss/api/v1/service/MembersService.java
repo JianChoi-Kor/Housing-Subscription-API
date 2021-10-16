@@ -5,6 +5,7 @@ import com.project.hss.api.entity.Members;
 import com.project.hss.api.enums.Authority;
 import com.project.hss.api.enums.MailAuthUsage;
 import com.project.hss.api.jwt.JwtTokenProvider;
+import com.project.hss.api.lib.Encrypt;
 import com.project.hss.api.lib.MailUtils;
 import com.project.hss.api.v1.dto.Response;
 import com.project.hss.api.v1.dto.request.MembersReqDto;
@@ -43,23 +44,36 @@ public class MembersService {
 
     public ResponseEntity<?> signUp(MembersReqDto.SignUp signUp) {
         if (membersRepository.existsByEmail(signUp.getEmail())) {
-            return response.fail("이미 회원가입된 이메일입니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("이미 회원가입된 이메일입니다.");
         }
 
-        Members member = Members.builder()
-                .email(signUp.getEmail())
-                .password(passwordEncoder.encode(signUp.getPassword()))
-                .phoneNumber(signUp.getPhoneNumber())
-                .roles(Collections.singletonList(Authority.ROLE_USER.name()))
-                .build();
-        membersRepository.save(member);
+        // 메일 인증 체크
+        Optional<MailAuth> mailAuthOptional = mailAuthRepository.findFirstByEmailAndVerifyCode(signUp.getEmail(), signUp.getEmailVerifyCode());
+        if (mailAuthOptional.isPresent()) {
+            MailAuth mailAuth = mailAuthOptional.get();
+            LocalDateTime validTime = mailAuth.getValidTime();
+            LocalDateTime now = LocalDateTime.now();
 
-        return response.success("회원가입에 성공했습니다.");
+            if (now.isAfter(validTime)) {
+                return response.fail("해당하는 인증코드는 사용할 수 없습니다.");
+            }
+
+            Members member = Members.builder()
+                    .email(signUp.getEmail())
+                    .password(passwordEncoder.encode(signUp.getPassword()))
+                    .phoneNumber(signUp.getPhoneNumber())
+                    .roles(Collections.singletonList(Authority.ROLE_USER.name()))
+                    .build();
+            membersRepository.save(member);
+
+            return response.success("회원가입에 성공했습니다.");
+        }
+        return response.fail("회원가입에 실패했습니다. 이메일 인증 확인에 실패했습니다.");
     }
 
     public ResponseEntity<?> sendEmail(MembersReqDto.SendEmail sendEmail) throws MessagingException {
         if (membersRepository.existsByEmail(sendEmail.getEmail())) {
-            return response.fail("이미 가입된 이메일입니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("이미 가입된 이메일입니다.");
         }
         Optional<MailAuth> mailAuthOptional =
                 mailAuthRepository.findFirstByEmailAndAuthUsageOrderByIdxDesc(sendEmail.getEmail(), MailAuthUsage.SIGN_UP);
@@ -67,10 +81,11 @@ public class MembersService {
             MailAuth mailAuth = mailAuthOptional.get();
             LocalDateTime sendExpire = mailAuth.getSendExpire();
             if (LocalDateTime.now().isBefore(sendExpire)) {
-                return response.fail("이메일 재발송은 30초 이후 가능합니다.", HttpStatus.BAD_REQUEST);
+                return response.fail("이메일 재발송은 30초 이후 가능합니다.");
             }
         }
 
+        // 인증 코드 생성
         String code = mailUtils.createVerifyCode();
         // 이메일 전송
         mailUtils.sendMailForEmailCert(sendEmail.getEmail(), code);
@@ -84,18 +99,39 @@ public class MembersService {
                 .verifyExpire(now.plusMinutes(3))
                 .validTime(now.plusMinutes(10))
                 .build());
-
         return response.success("인증 메일이 발송되었습니다.");
     }
 
     public ResponseEntity<?> certEmail(MembersReqDto.CertEmail certEmail) {
-        return response.success();
+        // 회원가입용 이메일과 인증번호를 통한 데이터 조회
+        Optional<MailAuth> mailAuthOptional = mailAuthRepository.findFirstByEmailAndCodeAndAuthUsage(certEmail.getEmail(), certEmail.getCode(), MailAuthUsage.SIGN_UP);
+        if (mailAuthOptional.isPresent()) {
+            MailAuth mailAuth = mailAuthOptional.get();
+            LocalDateTime verifyExpire = mailAuth.getVerifyExpire();
+            LocalDateTime validTime = mailAuth.getValidTime();
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isAfter(validTime)) {
+                return response.fail("해당하는 인증코드는 사용할 수 없습니다.");
+            }
+
+            if (now.isAfter(verifyExpire)) {
+                return response.fail("인증 가능한 시간이 만료되었습니다.");
+            }
+            mailAuth.setVerifyCode(Encrypt.getSha2bit256(certEmail.getEmail() + certEmail.getCode() + System.currentTimeMillis()));
+            mailAuthRepository.save(mailAuth);
+
+            MembersResDto.CertEmailSuccess certEmailSuccess = new MembersResDto.CertEmailSuccess();
+            certEmailSuccess.setEmail(certEmail.getEmail());
+            certEmailSuccess.setVerifyCode(certEmailSuccess.getVerifyCode());
+            return response.success(certEmailSuccess);
+        }
+        return response.fail("이메일 인증에 실패하였습니다.");
     }
 
     public ResponseEntity<?> login(MembersReqDto.Login login) {
 
         if (membersRepository.findByEmail(login.getEmail()).orElse(null) == null) {
-            return response.fail("해당하는 유저가 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("해당하는 유저가 존재하지 않습니다.");
         }
 
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성
@@ -119,20 +155,20 @@ public class MembersService {
     public ResponseEntity<?> reissue(MembersReqDto.Reissue reissue) {
         // 1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(reissue.getRefreshToken())) {
-            return response.fail("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("Refresh Token 정보가 유효하지 않습니다.");
         }
 
         // 2. Access Token 에서 User email 를 가져옵니다.
         Authentication authentication = jwtTokenProvider.getAuthentication(reissue.getAccessToken());
 
         // 3. Redis 에서 User email 을 기반으로 저장된 Refresh Token 값을 가져옵니다.
-        String refreshToken = (String)redisTemplate.opsForValue().get("RT:" + authentication.getName());
+        String refreshToken = (String) redisTemplate.opsForValue().get("RT:" + authentication.getName());
         // (추가) 로그아웃되어 Redis 에 RefreshToken 이 존재하지 않는 경우 처리
-        if(ObjectUtils.isEmpty(refreshToken)) {
-            return response.fail("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
+        if (ObjectUtils.isEmpty(refreshToken)) {
+            return response.fail("잘못된 요청입니다.");
         }
-        if(!refreshToken.equals(reissue.getRefreshToken())) {
-            return response.fail("Refresh Token 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        if (!refreshToken.equals(reissue.getRefreshToken())) {
+            return response.fail("Refresh Token 정보가 일치하지 않습니다.");
         }
 
         // 4. 새로운 토큰 생성
@@ -148,7 +184,7 @@ public class MembersService {
     public ResponseEntity<?> logout(MembersReqDto.Logout logout) {
         // 1. Access Token 검증
         if (!jwtTokenProvider.validateToken(logout.getAccessToken())) {
-            return response.fail("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("잘못된 요청입니다.");
         }
 
         // 2. Access Token 에서 User email 을 가져옵니다.

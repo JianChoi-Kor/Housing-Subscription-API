@@ -5,7 +5,6 @@ import com.project.hss.api.v1.dto.response.api.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +40,7 @@ public class ApplyhomeInfoSvcService {
         List<String> sidoList = Arrays.asList("강원", "경기", "경남", "경북", "광주", "대구", "대전", "부산", "서울",
                 "세종", "울산", "인천", "전남", "전북", "제주", "충남", "충북", "기타");
         if (lttotPblancListReq.getSido() != null && !sidoList.contains(lttotPblancListReq.getSido())) {
-            return response.fail("공급지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("공급지역이 올바르지 않습니다.");
         }
 
         StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getLttotPblancList"); /*URL*/
@@ -97,7 +96,7 @@ public class ApplyhomeInfoSvcService {
         // searchHouseSecd check
         List<String> searchHouseSecdList = Arrays.asList("0201", "0202", "0203", "0303");
         if (notAPTLttotPblancListReq.getSearchHouseSecd() != null && !searchHouseSecdList.contains(notAPTLttotPblancListReq.getSearchHouseSecd())) {
-            return response.fail("주택구분값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
+            return response.fail("주택구분값이 올바르지 않습니다.");
         }
 
         StringBuilder urlBuilder = new StringBuilder(openApiBaseUrl + "/getNotAPTLttotPblancList"); /*URL*/

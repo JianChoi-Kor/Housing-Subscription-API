@@ -122,6 +122,25 @@ public class Response {
         return fail(Collections.emptyList(), msg, status);
     }
 
+    /**
+     * <p> 메세지를 가진 실패 응답을 반환한다. HttpStatus.BAD_REQUEST </p>
+     * <pre>
+     *     {
+     *         "state" : 400,
+     *         "result" : fail,
+     *         "message" : message,
+     *         "data" : [],
+     *         "error" : []
+     *     }
+     * </pre>
+     *
+     * @param msg 응답 바디 message 필드에 포함될 정보
+     * @return 응답 객체
+     */
+    public ResponseEntity<?> fail(String msg) {
+        return fail(Collections.emptyList(), msg, HttpStatus.BAD_REQUEST);
+    }
+
     public ResponseEntity<?> invalidFields(LinkedList<LinkedHashMap<String, String>> errors) {
         Body body = Body.builder()
                 .state(HttpStatus.BAD_REQUEST.value())
