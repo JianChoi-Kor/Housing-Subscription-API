@@ -2,16 +2,20 @@ package com.project.hss.api.v1.service;
 
 import com.project.hss.api.entity.MailAuth;
 import com.project.hss.api.entity.Members;
+import com.project.hss.api.entity.SmsAuth;
 import com.project.hss.api.enums.Authority;
 import com.project.hss.api.enums.MailAuthUsage;
+import com.project.hss.api.enums.SmsAuthUsage;
 import com.project.hss.api.jwt.JwtTokenProvider;
 import com.project.hss.api.lib.Encrypt;
 import com.project.hss.api.lib.MailUtils;
+import com.project.hss.api.lib.SmsUtils;
 import com.project.hss.api.v1.dto.Response;
 import com.project.hss.api.v1.dto.request.MembersReqDto;
 import com.project.hss.api.v1.dto.response.MembersResDto;
 import com.project.hss.api.v1.repository.MailAuthRepository;
 import com.project.hss.api.v1.repository.MembersRepository;
+import com.project.hss.api.v1.repository.SmsAuthRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -35,12 +39,14 @@ public class MembersService {
 
     private final MembersRepository membersRepository;
     private final MailAuthRepository mailAuthRepository;
+    private final SmsAuthRepository smsAuthRepository;
     private final Response response;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final RedisTemplate redisTemplate;
     private final MailUtils mailUtils;
+    private final SmsUtils smsUtils;
 
     public ResponseEntity<?> signUp(MembersReqDto.SignUp signUp) {
         if (membersRepository.existsByEmail(signUp.getEmail())) {
@@ -51,22 +57,33 @@ public class MembersService {
         Optional<MailAuth> mailAuthOptional = mailAuthRepository.findFirstByEmailAndVerifyCode(signUp.getEmail(), signUp.getEmailVerifyCode());
         if (mailAuthOptional.isPresent()) {
             MailAuth mailAuth = mailAuthOptional.get();
-            LocalDateTime validTime = mailAuth.getValidTime();
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime emailValidTime = mailAuth.getValidTime();
+            LocalDateTime emailNow = LocalDateTime.now();
 
-            if (now.isAfter(validTime)) {
-                return response.fail("해당하는 인증코드는 사용할 수 없습니다.");
+            if (emailNow.isAfter(emailValidTime)) {
+                return response.fail("해당하는 이메일 인증코드는 사용할 수 없습니다.");
             }
 
-            Members member = Members.builder()
-                    .email(signUp.getEmail())
-                    .password(passwordEncoder.encode(signUp.getPassword()))
-                    .phoneNumber(signUp.getPhoneNumber())
-                    .roles(Collections.singletonList(Authority.ROLE_USER.name()))
-                    .build();
-            membersRepository.save(member);
+            Optional<SmsAuth> smsAuthOptional = smsAuthRepository.findFirstByPhoneNumberAndVerifyCode(signUp.getPhoneNumber(), signUp.getPhoneVerifyCode());
+            if (smsAuthOptional.isPresent()) {
+                SmsAuth smsAuth = smsAuthOptional.get();
+                LocalDateTime smsValidTime = smsAuth.getValidTime();
+                LocalDateTime smsNow = LocalDateTime.now();
+                if (smsNow.isAfter(smsValidTime)) {
+                    return response.fail("해당하는 휴대폰 인증코드는 사용할 수 없습니다.");
+                }
 
-            return response.success("회원가입에 성공했습니다.");
+                Members member = Members.builder()
+                        .email(signUp.getEmail())
+                        .password(passwordEncoder.encode(signUp.getPassword()))
+                        .phoneNumber(signUp.getPhoneNumber())
+                        .roles(Collections.singletonList(Authority.ROLE_USER.name()))
+                        .build();
+                membersRepository.save(member);
+
+                return response.success("회원가입에 성공했습니다.");
+            }
+            return response.fail("회원가입에 실패했습니다. 휴대폰 인증 확인에 실패했습니다.");
         }
         return response.fail("회원가입에 실패했습니다. 이메일 인증 확인에 실패했습니다.");
     }
@@ -125,7 +142,60 @@ public class MembersService {
             certEmailSuccess.setVerifyCode(mailAuth.getVerifyCode());
             return response.success(certEmailSuccess);
         }
-        return response.fail("이메일 인증에 실패하였습니다.");
+        return response.fail("이메일 인증에 실패했습니다.");
+    }
+
+    public ResponseEntity<?> sendSms(MembersReqDto.SendSms sendSms) {
+        if (membersRepository.existsByPhoneNumber(sendSms.getPhoneNumber())) {
+            return response.fail("이미 가입된 휴대폰입니다.");
+        }
+
+        Optional<SmsAuth> smsAuthOptional = smsAuthRepository.findFirstByPhoneNumberAndAuthUsageOrderByIdxDesc(sendSms.getPhoneNumber(), SmsAuthUsage.SIGN_UP);
+        if (smsAuthOptional.isPresent()) {
+            SmsAuth smsAuth = smsAuthOptional.get();
+            LocalDateTime sendExpire = smsAuth.getSendExpire();
+            if (LocalDateTime.now().isBefore(sendExpire)) {
+                return response.fail("휴대폰 인증 재발송은 30초 이후 가능합니다.");
+            }
+        }
+
+        String code = smsUtils.createVerifyCode();
+        // TODO:: sms 발송
+        LocalDateTime now = LocalDateTime.now();
+        smsAuthRepository.save(SmsAuth.builder()
+                .phoneNumber(sendSms.getPhoneNumber())
+                .code(code)
+                .authUsage(SmsAuthUsage.SIGN_UP)
+                .sendExpire(now.plusSeconds(30))
+                .verifyExpire(now.plusMinutes(3))
+                .validTime(now.plusMinutes(10))
+                .build());
+        return response.success("인증 번호가 발송되었습니다.");
+    }
+
+    public ResponseEntity<?> certSms(MembersReqDto.CertSms certSms) {
+        Optional<SmsAuth> smsAuthOptional = smsAuthRepository.findFirstByPhoneNumberAndCodeAndAuthUsage(certSms.getPhoneNumber(), certSms.getCode(), SmsAuthUsage.SIGN_UP);
+        if (smsAuthOptional.isPresent()) {
+            SmsAuth smsAuth = smsAuthOptional.get();
+            LocalDateTime verifyExpire = smsAuth.getVerifyExpire();
+            LocalDateTime validTime = smsAuth.getValidTime();
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isAfter(validTime)) {
+                return response.fail("해당하는 인증코드는 사용할 수 없습니다.");
+            }
+
+            if (now.isAfter(verifyExpire)) {
+                return response.fail("인증 가능한 시간이 만료되었습니다.");
+            }
+            smsAuth.setVerifyCode(Encrypt.getSha2bit256(certSms.getPhoneNumber() + certSms.getCode() + System.currentTimeMillis()));
+            smsAuthRepository.save(smsAuth);
+
+            MembersResDto.CertSmsSuccess certSmsSuccess = new MembersResDto.CertSmsSuccess();
+            certSmsSuccess.setPhoneNumber(certSms.getPhoneNumber());
+            certSmsSuccess.setVerifyCode(smsAuth.getVerifyCode());
+            return response.success(certSmsSuccess);
+        }
+        return response.fail("휴대폰 인증에 실패했습니다.");
     }
 
     public ResponseEntity<?> login(MembersReqDto.Login login) {

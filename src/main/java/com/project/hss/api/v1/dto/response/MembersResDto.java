@@ -23,4 +23,11 @@ public class MembersResDto {
         private String email;
         private String verifyCode;
     }
+
+    @Getter
+    @Setter
+    public static class CertSmsSuccess {
+        private String phoneNumber;
+        private String verifyCode;
+    }
 }

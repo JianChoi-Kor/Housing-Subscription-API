@@ -29,11 +29,16 @@ public class MembersReqDto {
 
         @Schema(description = "휴대폰번호", example = "01012345678")
         @NotBlank(message = "휴대폰번호는 필수 입력값입니다.")
+        @Pattern(regexp = "^[0-9]{11}$", message = "휴대폰번호가 올바르지 않습니다.")
         private String phoneNumber;
 
         @Schema(description = "이메일 검증 확인을 위한 해시코드")
         @NotBlank(message = "이메일 검증 코드는 필수 입력값입니다.")
         private String emailVerifyCode;
+
+        @Schema(description = "휴대폰 검증 확인을 위한 해시코드")
+        @NotBlank(message = "휴대폰 검증 코드는 필수 입력값입니다.")
+        private String phoneVerifyCode;
     }
 
     @Getter
@@ -54,6 +59,29 @@ public class MembersReqDto {
         private String email;
 
         @Schema(description = "이메일로 수신받은 6자리 인증번호", example = "123456")
+        @NotBlank(message = "인증번호는 필수 입력값입니다.")
+        @Pattern(regexp = "^[0-9]{6}$", message = "인증번호는 6자리 숫자를 입력해주세요.")
+        private String code;
+    }
+
+    @Getter
+    @Setter
+    public static class SendSms {
+        @Schema(description = "휴대폰번호", example = "test@test.test")
+        @NotBlank(message = "휴대폰번호는 필수 입력값입니다.")
+        @Pattern(regexp = "^[0-9]{11}$", message = "휴대폰번호가 올바르지 않습니다.")
+        private String phoneNumber;
+    }
+
+    @Getter
+    @Setter
+    public static class CertSms {
+        @Schema(description = "휴대폰번호", example = "test@test.test")
+        @NotBlank(message = "휴대폰번호는 필수 입력값입니다.")
+        @Pattern(regexp = "^[0-9]{11}$", message = "휴대폰번호가 올바르지 않습니다.")
+        private String phoneNumber;
+
+        @Schema(description = "휴대폰으로 받은 6자리 인증번호", example = "654321")
         @NotBlank(message = "인증번호는 필수 입력값입니다.")
         @Pattern(regexp = "^[0-9]{6}$", message = "인증번호는 6자리 숫자를 입력해주세요.")
         private String code;
