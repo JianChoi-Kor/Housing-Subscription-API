@@ -69,11 +69,11 @@ public class SmsUtils {
         return encodeBase64String;
     }
 
-    public MembersResDto.SmsResponse sendSmsForSmsCert() throws JsonProcessingException, InvalidKeyException, NoSuchAlgorithmException, URISyntaxException, UnsupportedEncodingException {
+    public MembersResDto.SmsResponse sendSmsForSmsCert(String phoneNumber, String content) throws JsonProcessingException, InvalidKeyException, NoSuchAlgorithmException, URISyntaxException, UnsupportedEncodingException {
         String time = Long.toString(System.currentTimeMillis());
         // 메세지 생성
         List<MembersReqDto.SmsRequest.SmsMessage> smsMessageList = new ArrayList<>();
-        MembersReqDto.SmsRequest.SmsMessage smsMessage = new MembersReqDto.SmsRequest.SmsMessage("01036142377", "청약알림이 휴대폰 인증 번호입니다.");
+        MembersReqDto.SmsRequest.SmsMessage smsMessage = new MembersReqDto.SmsRequest.SmsMessage(phoneNumber, content);
         smsMessageList.add(smsMessage);
 
         MembersReqDto.SmsRequest smsRequest = new MembersReqDto.SmsRequest();
@@ -88,7 +88,6 @@ public class SmsUtils {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-ncp-apigw-timestamp", time);
         headers.set("x-ncp-iam-access-key", accessKey);
-
         // signature 서명
         headers.set("x-ncp-apigw-signature-v2", getSignature(time));
 

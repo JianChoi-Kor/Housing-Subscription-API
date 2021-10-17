@@ -165,18 +165,22 @@ public class MembersService {
         }
 
         String code = smsUtils.createVerifyCode();
+        String content = "청약알림이 본인확인 인증번호 [" + code + "] 입니다.";
         // sms 발송
-        smsUtils.sendSmsForSmsCert();
-        LocalDateTime now = LocalDateTime.now();
-        smsAuthRepository.save(SmsAuth.builder()
-                .phoneNumber(sendSms.getPhoneNumber())
-                .code(code)
-                .authUsage(SmsAuthUsage.SIGN_UP)
-                .sendExpire(now.plusSeconds(30))
-                .verifyExpire(now.plusMinutes(3))
-                .validTime(now.plusMinutes(10))
-                .build());
-        return response.success("인증 번호가 발송되었습니다.");
+        MembersResDto.SmsResponse smsResponse = smsUtils.sendSmsForSmsCert(sendSms.getPhoneNumber(), content);
+        if (smsResponse.getStatusCode().equals("202")) {
+            LocalDateTime now = LocalDateTime.now();
+            smsAuthRepository.save(SmsAuth.builder()
+                    .phoneNumber(sendSms.getPhoneNumber())
+                    .code(code)
+                    .authUsage(SmsAuthUsage.SIGN_UP)
+                    .sendExpire(now.plusSeconds(30))
+                    .verifyExpire(now.plusMinutes(3))
+                    .validTime(now.plusMinutes(10))
+                    .build());
+            return response.success("인증번호가 발송되었습니다.");
+        }
+        return response.fail("인증번호 발송에 실패했습니다.");
     }
 
     public ResponseEntity<?> certSms(MembersReqDto.CertSms certSms) {
