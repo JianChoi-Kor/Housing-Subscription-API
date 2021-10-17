@@ -1,5 +1,6 @@
 package com.project.hss.api.v1.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.project.hss.api.entity.MailAuth;
 import com.project.hss.api.entity.Members;
 import com.project.hss.api.entity.SmsAuth;
@@ -28,6 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
@@ -145,7 +150,7 @@ public class MembersService {
         return response.fail("이메일 인증에 실패했습니다.");
     }
 
-    public ResponseEntity<?> sendSms(MembersReqDto.SendSms sendSms) {
+    public ResponseEntity<?> sendSms(MembersReqDto.SendSms sendSms) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException, URISyntaxException, UnsupportedEncodingException {
         if (membersRepository.existsByPhoneNumber(sendSms.getPhoneNumber())) {
             return response.fail("이미 가입된 휴대폰입니다.");
         }
@@ -160,7 +165,8 @@ public class MembersService {
         }
 
         String code = smsUtils.createVerifyCode();
-        // TODO:: sms 발송
+        // sms 발송
+        smsUtils.sendSmsForSmsCert();
         LocalDateTime now = LocalDateTime.now();
         smsAuthRepository.save(SmsAuth.builder()
                 .phoneNumber(sendSms.getPhoneNumber())

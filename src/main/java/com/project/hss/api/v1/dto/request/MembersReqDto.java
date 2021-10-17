@@ -1,12 +1,14 @@
 package com.project.hss.api.v1.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 public class MembersReqDto {
 
@@ -85,6 +87,25 @@ public class MembersReqDto {
         @NotBlank(message = "인증번호는 필수 입력값입니다.")
         @Pattern(regexp = "^[0-9]{6}$", message = "인증번호는 6자리 숫자를 입력해주세요.")
         private String code;
+    }
+
+    @Getter
+    @Setter
+    public static class SmsRequest {
+        private String type = "SMS";
+        private String contentType = "COMM";
+        private String countryCode = "82";
+        private String from = "01038499269";
+        private String content = "청약알림이 휴대폰 인증 코드입니다.";
+        private List<SmsMessage> messages;
+
+        @Getter
+        @Setter
+        @AllArgsConstructor
+        public static class SmsMessage {
+            private String to;
+            private String content;
+        }
     }
 
     @Getter

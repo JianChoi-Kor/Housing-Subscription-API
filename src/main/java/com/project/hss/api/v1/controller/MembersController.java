@@ -1,5 +1,6 @@
 package com.project.hss.api.v1.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.project.hss.api.lib.Helper;
 import com.project.hss.api.v1.dto.Response;
 import com.project.hss.api.v1.dto.request.MembersReqDto;
@@ -16,6 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @Tag(name = "Member", description = "청약알림이 회원가입, 로그인, 로그아웃, 토큰 재발급")
 @Slf4j
@@ -59,7 +64,7 @@ public class MembersController {
 
     @Operation(summary = "회원가입 인증 문자 전송", description = "회원가입 인증 문자 전송", tags = "Member")
     @PostMapping("/sign-up/sms/send")
-    public ResponseEntity<?> sendSms(MembersReqDto.SendSms sendSms, Errors errors) {
+    public ResponseEntity<?> sendSms(MembersReqDto.SendSms sendSms, Errors errors) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException, URISyntaxException, UnsupportedEncodingException {
         // validation check
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));

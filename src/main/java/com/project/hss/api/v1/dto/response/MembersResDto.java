@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+
 public class MembersResDto {
 
     @Builder
@@ -29,5 +31,14 @@ public class MembersResDto {
     public static class CertSmsSuccess {
         private String phoneNumber;
         private String verifyCode;
+    }
+
+    @Getter
+    @Setter
+    public static class SmsResponse {
+        private String statusCode;
+        private String statusName;
+        private String requestId;
+        private Timestamp requestTime;
     }
 }
